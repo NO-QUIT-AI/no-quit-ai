@@ -48,16 +48,36 @@ export default function App(){
   }
 
   const getReply=(q,l,b)=>{
+    // Language Detect - Simple but works for all
+    const isUrdu = /(salam|bhai|kya|kese|kaise|hai|hu|banao|bnana|koch|kuch|shukria|zabardast|mast|walaikum)/i.test(l)
+    const isEnglish = !isUrdu && /^[a-z0-9 ,.!?'"-]+$/i.test(q) && l.split(' ').length>1
+
+    // If building - reply in same language as user + build
+    if(b){
+        if(isEnglish) return `Got it brother! Building your ${b.toUpperCase()} right now! 👇 Live preview below!`
+        return `Lo bhai! ${b.toUpperCase()} bana diya! 👇 Neeche live preview dekho!`
+    }
+
+    // GREETINGS - Same language
     if(l.includes("salam")||l.includes("aslam")) return "Walaikum Aslam bhai! ❤️ Allah khair kare! Bolo kya banana hai?"
-    if(l.includes("how are you")||l.includes("kese ho")||l.includes("kaisa")||l.includes("kya hal")) return "Alhamdulillah ek dum zabardast hu bhai! Tum sunao! Kya build karein aaj? 🚀"
-    if(l.includes("thank")||l.includes("shukria")||l.includes("thanks")) return "Koi baat nahi bhai! ❤️ Dil se! Aur kuch banana hai to bolo!"
-    if(l.includes("kon ho")||l.includes("kaun ho")||l.includes("who are you")) return "Main NO QUIT AI hu bhai! Tumhara personal coder! Website, App, Calculator, Game - kuch bhi foran bana deta hu! Bolo kya banana hai?"
-    if(l.includes("kya kar sakte")||l.includes("what can you do")) return "Bhai main sab kuch bana sakta hu! 🌐 Website, 🧮 Calculator, 📝 Todo App, 🎮 Game, 🛒 Ecommerce, Blog - Bas bolo 'banao' aur foran ban jayega!"
-    if(l.includes("name")||l.includes("naam")) return "Mera naam NO QUIT AI hai bhai! Always Building! 😎"
-    if(l.includes("maza")||l.includes("mast")||l.includes("zabardast")) return "Haha shukria bhai! 😍 Tum bolo to aur bhi mast cheez bana dun!"
-    if(b) return `Lo bhai! ${b.toUpperCase()} bana diya! 👇 Neeche live preview dekho!`
-    // DEFAULT - Har baat ka jawab
-    return `Samjha bhai! "${q}" - Bilkul ho jayega! 👍 Isko main kis tarah banaun? Website bana dun, App bana dun ya iska calculator jaisa kuch? Bolo kya scene hai, foran bana deta hu! 🔥`
+    if(l.includes("how are you")){
+        if(isEnglish) return "Alhamdulillah I'm doing great brother! How about you? What should we build today? 🚀"
+        return "Alhamdulillah ek dum zabardast hu bhai! Tum sunao! Kya build karein aaj? 🚀"
+    }
+    if(l.includes("kese ho")||l.includes("kaisa hai")||l.includes("kya hal")) return "Alhamdulillah ek dum mast hu bhai! Tum batao, kya banana hai? 😎"
+
+    if(l.includes("thank")||l.includes("thanks")){
+        return isEnglish ? "You're welcome brother! ❤️ Anytime! What else to build?" : "Koi baat nahi bhai! ❤️ Dil se! Aur kuch banana hai?"
+    }
+    if(l.includes("kon ho")||l.includes("who are you")) return isEnglish ? "I'm NO QUIT AI brother! Your personal builder - Website, Calculator, Todo, Game - I build instantly! Just say 'build'!" : "Main NO QUIT AI hu bhai! Tumhara personal coder! Jo bolo foran bana deta hu!"
+    if(l.includes("kya kar")||l.includes("what can you")) return isEnglish ? "I can build anything! Website, Calculator, Todo, Game, Ecommerce, Blog - Just say 'Build calculator' and it's done instantly!" : "Bhai main sab kuch bana sakta hu! Website, Calculator, Todo, Game, Shop - Bas 'banao' bolo, foran ban jayega!"
+
+    // UNIVERSAL REPLY - Same language as user
+    if(isEnglish){
+        return `Got it! "${q}" - Absolutely doable! Tell me how you want it? As a website, an app, or something else? I'll build it instantly! 🔥`
+    }
+    // Urdu / Mix default
+    return `Samajh gaya bhai! "${q}" - Bilkul ho jayega! Isko website bana dun ya app? Bolo kya scene hai, foran bana deta hu! 🔥`
   }
 
   const send=()=>{
