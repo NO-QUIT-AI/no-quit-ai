@@ -47,22 +47,35 @@ export default function App(){
     return null
   }
 
+  const getReply=(q,l,b)=>{
+    if(l.includes("salam")||l.includes("aslam")) return "Walaikum Aslam bhai! ❤️ Allah khair kare! Bolo kya banana hai?"
+    if(l.includes("how are you")||l.includes("kese ho")||l.includes("kaisa")||l.includes("kya hal")) return "Alhamdulillah ek dum zabardast hu bhai! Tum sunao! Kya build karein aaj? 🚀"
+    if(l.includes("thank")||l.includes("shukria")||l.includes("thanks")) return "Koi baat nahi bhai! ❤️ Dil se! Aur kuch banana hai to bolo!"
+    if(l.includes("kon ho")||l.includes("kaun ho")||l.includes("who are you")) return "Main NO QUIT AI hu bhai! Tumhara personal coder! Website, App, Calculator, Game - kuch bhi foran bana deta hu! Bolo kya banana hai?"
+    if(l.includes("kya kar sakte")||l.includes("what can you do")) return "Bhai main sab kuch bana sakta hu! 🌐 Website, 🧮 Calculator, 📝 Todo App, 🎮 Game, 🛒 Ecommerce, Blog - Bas bolo 'banao' aur foran ban jayega!"
+    if(l.includes("name")||l.includes("naam")) return "Mera naam NO QUIT AI hai bhai! Always Building! 😎"
+    if(l.includes("maza")||l.includes("mast")||l.includes("zabardast")) return "Haha shukria bhai! 😍 Tum bolo to aur bhi mast cheez bana dun!"
+    if(b) return `Lo bhai! ${b.toUpperCase()} bana diya! 👇 Neeche live preview dekho!`
+    // DEFAULT - Har baat ka jawab
+    return `Samjha bhai! "${q}" - Bilkul ho jayega! 👍 Isko main kis tarah banaun? Website bana dun, App bana dun ya iska calculator jaisa kuch? Bolo kya scene hai, foran bana deta hu! 🔥`
+  }
+
   const send=()=>{
     if(!input.trim()) return
     const q=input
+    const l=q.toLowerCase()
     const b=detect(q)
     setMsgs(m=>[...m,{from:"user",text:q}])
     setNotes(n=>[...n,q])
     setInput("")
     setTimeout(()=>{
-      let reply=b?`Lo bhai! ${b.toUpperCase()} bana diya! 👇 Live preview dekho!`:`Samajh gaya bhai! '${q}' - Thoda detail batao mai foran bana deta hu!`
-      if(!b && q.toLowerCase().includes("salam")) reply="Walaikum Aslam bhai! ❤️ Bolo kya banana hai?"
-      if(!b && q.toLowerCase().includes("how are you")) reply="Alhamdulillah mast hu bhai! Bolo kya build karein?"
+      const reply=getReply(q,l,b)
       setMsgs(m=>[...m,{from:"ai",text:reply,build:b}])
-    },400)
+    },350)
   }
 
   return (
+
     <div style={{minHeight:"100vh",background:"#0a0a0a",color:"#e5e5e5",fontFamily:"monospace",display:"flex"}}>
       <div style={{width:155,background:"#080808",borderRight:"1px solid #1a1a1a",padding:"10px 8px",fontSize:11}}>
         <div style={{fontWeight:800}}>NO QUIT AI<br/><span style={{fontSize:7,color:"#666"}}>ALWAYS BUILDING</span></div>
