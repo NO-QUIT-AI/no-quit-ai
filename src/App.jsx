@@ -1,116 +1,75 @@
-
-import { useState, useRef, useEffect } from 'react'
-
-function Builder({type}){
-  const [val,setVal]=useState("")
-  const [todos,setTodos]=useState([])
-  const [t,setT]=useState("")
-  if(type==="calculator"){
-    return (
-      <div style={{background:"#fff",color:"#000",padding:12,borderRadius:12,marginTop:8}}>
-        <div style={{background:"#000",color:"#0f0",padding:12,fontSize:22,textAlign:"right",borderRadius:8}}>{val||"0"}</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginTop:8}}>
-          <button onClick={()=>setVal("")} style={{gridColumn:"span 4",padding:10,background:"#ff4444",color:"#fff",border:"none",borderRadius:6}}>CLEAR</button>
-          {["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"].map(x=>(
-            <button key={x} onClick={()=>{if(x==="="){try{setVal(String(eval(val)))}catch{setVal("Error")}}else setVal(p=>p+x)}} style={{padding:14,background:x==="="?"#000":"#eee",color:x==="="?"#fff":"#000",border:"none",borderRadius:6,fontWeight:700}}>{x}</button>
-          ))}
+import { useState, useRef, useEffect } from "react";
+const getSmartReply = (q) => {
+  if (!q ||!q.trim()) return "Bhai kuch likho toh sahi! 🙂";
+  const raw = q.trim();
+  const l = raw.toLowerCase();
+  const isUrduScript = /[\u0600-\u06FF]/.test(raw);
+  const isRomanUrdu = /(mujy|mujhe|kesy|kese|kaise|kya|kyu|bhai|jana|hy|hai|hu|wala|aslam|salam|shukria|acha|kese ho|kya hal|paisa|kamana|sekhna|batao|banao|bnado|chahiye|chahye)/i.test(l);
+  const isEnglish =!isUrduScript &&!isRomanUrdu;
+  const isBuildIntent = /(bana|banao|banado|bnado|build|create|make|design|code|develop|clone|setup)/i.test(l);
+  const isExplainIntent = /(samjha|samjhao|explain|what is|kya hai|kya hota|how to|kaise)/i.test(l);
+  const techStack = l.match(/(react|nextjs|node|python|tailwind|css|javascript|html|express|mongodb|firebase)/gi) || [];
+  const projectTypes = l.match(/(calculator|todo|shop|store|ecommerce|game|website|app|dashboard|chat|bot|landing page|portfolio|crud)/gi) || [];
+  const cleanedTopic = raw.replace(/(bana|banao|banado|bnado|build|create|make|design|please|bhai|yaar|mujy|mujhe|ik|ek|code|chahiye|do|de|dene|kardo|krdo)/gi, "").trim();
+  if (l.includes("salam") || l.includes("aslam") || l.includes("السلام")) {
+    if (isUrduScript) return "وعلیکم السلام بھائی! ❤️ بولو آج کیا دھماکہ خیز پروجیکٹ بنانا ہے؟";
+    if (isEnglish) return "Walaikum Aslam bro! ❤️ What awesome app are we building today?";
+    return "Walaikum Aslam bhai! ❤️ Allah khair kare! Batao aaj kya zabardast cheez banani hai?";
+  }
+  if (isBuildIntent) {
+    const topicDisplay = projectTypes.length > 0? projectTypes.join(" + ").toUpperCase() : (cleanedTopic? cleanedTopic.toUpperCase() : "CUSTOM PROJECT");
+    const stackText = techStack.length > 0? ` using ${techStack.join(", ").toUpperCase()}` : "";
+    if (isUrduScript) return `ٹھیک ہے بھائی! آپ کا ${topicDisplay} پروجیکٹ تیار کرتے ہیں۔ میں اس کا کوڈ لکھنا شروع کروں؟ 🚀`;
+    if (isEnglish) return `Got it bro! I'm on it. Starting the architecture for your ${topicDisplay}${stackText}. Ready to review the code? 🚀`;
+    return `Zabardast bhai! Aapka ${topicDisplay}${stackText} ka request mil gaya hai. Abhi poora code structure tayar karke deta hu! 🚀`;
+  }
+  if (isExplainIntent) {
+    const topic = cleanedTopic || "is topic";
+    if (isEnglish) return `Sure bro! Let me break down ${topic} step-by-step for you.`;
+    return `Bilkul bhai! ${topic} ko aasan lafzon me samjha deta hu.`;
+  }
+  if (l.match(/china|chaina|cheena|chayna|چین/)) {
+    return isEnglish? "For China: Passport + Visa + Ticket required. Tourist visa takes 4-5 days. Want me to build a travel guide dashboard?" : "China jane ke liye Passport + Visa + Ticket chahiye! Tourist visa 4-5 din me lagta hai. Bolo Travel Guide app bana dun?";
+  }
+  if (l.match(/lora|lodda|loda|lodd|لورا/)) {
+    return "LoRA (Low-Rank Adaptation) AI models ko kam VRAM pe fine-tune karne ke liye use hota hai. Kya aapko iska Python script chahiye?";
+  }
+  if (l.match(/trading|trade|ٹریڈنگ/)) {
+    return "Trading ke liye Binance/TradingView pe practice karo. Kya main aapke liye profit calculator ya signal dashboard banao?";
+  }
+  if (isUrduScript) return `میں آپ کی بات سمجھ گیا ہوں: "${raw}"۔ بتائیں اس کا پروجیکٹ بناؤں یا ڈیٹیل بتاؤں؟`;
+  if (isEnglish) return `I got your context: "${raw}". Should I write the full code for this or explain the concept first?`;
+  return `Bhai aapne kaha: "${raw}". Batao iska complete code likh du ya pehle structure samjhau?`;
+};
+export default function App() {
+  const [msgs, setMsgs] = useState([{ from: "ai", text: "Aslam o Alaikum bhai! NO QUIT AI Full Smart Mode me active hai! Bolo kya banana hai? High-level custom apps, Dashboards, ya APIs?" }]);
+  const [input, setInput] = useState("");
+  const chatEndRef = useRef(null);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+  const send = () => {
+    if (!input.trim()) return;
+    const q = input;
+    setMsgs((m) => [...m, { from: "user", text: q }]);
+    setInput("");
+    setTimeout(() => { setMsgs((m) => [...m, { from: "ai", text: getSmartReply(q) }]); }, 250);
+  };
+  return (
+    <div style={{ minHeight: "100vh", background: "#0d0d0e", color: "#e5e7eb", fontFamily: "monospace", display: "flex" }}>
+      <div style={{ width: 180, background: "#111113", borderRight: "1px solid #222225", padding: 15, display: "flex", flexDirection: "column", gap: 15 }}>
+        <div><b style={{ color: "#fbbf24", fontSize: 16 }}>NO QUIT AI</b><br/><small style={{ color: "#6b7280" }}>SMART BUILDER v2</small></div>
+        <button onClick={() => setMsgs([{ from: "ai", text: "New Chat Started! Bolo kya banana hai?" }])} style={{ background: "#fbbf24", color: "#000", border: "none", padding: "8px 12px", borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>+ New Chat</button>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh" }}>
+        <div style={{ padding: 15, borderBottom: "1px solid #222225", background: "#111113", fontWeight: "bold" }}>💬 CHAT - Smart Context Engine</div>
+        <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+          {msgs.map((m, i) => (<div key={i} style={{ margin: "12px 0", textAlign: m.from === "user"? "right" : "left" }}><div style={{ background: m.from === "user"? "#2563eb" : "#1f1f23", color: "#ffffff", padding: "10px 16px", borderRadius: 12, display: "inline-block", maxWidth: "75%", lineHeight: "1.5" }}>{m.text}</div></div>))}
+          <div ref={chatEndRef} />
+        </div>
+        <div style={{ padding: 15, display: "flex", gap: 10, borderTop: "1px solid #222225", background: "#111113" }}>
+          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Kuch bhi pucho ya banwao (e.g., 'React me Ecommerce store ka code do')..." style={{ flex: 1, padding: 12, borderRadius: 8, background: "#1f1f23", border: "1px solid #333338", color: "white", outline: "none" }} />
+          <button onClick={send} style={{ padding: "12px 24px", background: "#fbbf24", color: "black", border: "none", borderRadius: 8, fontWeight: "bold", cursor: "pointer" }}>Send</button>
         </div>
       </div>
-    )
-  }
-  if(type==="todo"){
-    return (<div style={{background:"#fff",color:"#000",padding:12,borderRadius:12,marginTop:8}}><b>Todo App Live</b><div style={{display:"flex",gap:6,marginTop:8}}><input value={t} onChange={e=>setT(e.target.value)} style={{flex:1,padding:8,border:"1px solid #ccc",borderRadius:6}}/><button onClick={()=>{if(t.trim()){setTodos([...todos,t]);setT("")}}} style={{background:"#000",color:"#fff",padding:"8px 12px",borderRadius:6}}>Add</button></div>{todos.map((y,i)=><div key={i} style={{padding:6,borderBottom:"1px solid #eee"}}>{y}</div>)}</div>)
-  }
-  if(type==="portfolio"){
-    return (<div style={{background:"#fff",color:"#000",padding:16,borderRadius:12,marginTop:8}}><h2>🚀 Portfolio Ready!</h2><p>Hi, I am Developer - Modern dark portfolio built!</p><button style={{background:"#000",color:"#fff",padding:"8px 16px",border:"none",borderRadius:6}}>Contact Me</button></div>)
-  }
-  return <div style={{background:"#fff",color:"#000",padding:12,borderRadius:12,marginTop:8}}>✅ {type.toUpperCase()} Built Successfully!</div>
-}
-
-export default function App(){
-  const [view,setView]=useState("dash")
-  const [notes,setNotes]=useState([])
-  const [note,setNote]=useState("")
-  const [msgs,setMsgs]=useState([{from:"ai",text:"Aslam o Alaikum bhai! NO QUIT AI full power me wapas! Bolo kya banana hai? Website, Calculator, Todo? Foran bana dunga!"}])
-  const [input,setInput]=useState("")
-  const bottomRef=useRef(null)
-  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[msgs,view])
-
-  const detect=(q)=>{
-    const l=q.toLowerCase()
-    if(l.includes("calcul")) return "calculator"
-    if(l.includes("todo")) return "todo"
-    if(l.includes("port")||l.includes("website")||l.includes("web")) return "portfolio"
-    if(l.includes("shop")||l.includes("ecom")) return "ecommerce"
-    if(l.includes("blog")) return "blog"
-    if(l.includes("game")) return "game"
-    return null
-  }
-
-  const getReply=(q,l,b)=>{
-  if(b){ return l.includes('salam')? 'Walaikum Aslam bhai! Building '+b+'! ❤️' : 'Lo bhai! '+b.toUpperCase()+' bana diya! 👇'; }
-  if(l.includes('salam')||l.includes('aslam')) return 'Walaikum Aslam bhai! ❤️ Allah khair kare! Bolo kya banana hai?';
-  if(l.includes('china')||l.includes('chaina')||l.includes('chayna')||l.includes('chian')||l.includes('cheena')) return 'China jane ke liye Passport + Visa + Ticket! Tourist visa 4-5 din me lagta hai. Bolo guide website bana dun ya detail samjhau?';
-  if(l.includes('lora')||l.includes('lodd')||l.includes('loda')) return 'LoRA = Low-Rank Adaptation, AI model fine-tune ka tareeqa! Bolo samjhau ya dashboard bana dun?';
-  if(l.includes('trading')||l.includes('trade')) return 'Trading Demo se start karo! Binance/TradingView pe practice. Bolo learning website bana dun?';
-  if(l.includes('help')) return 'Haan bhai bolo! Info ya build?';
-}
-  // UNIVERSAL REPLY - Same language as user
-    if(isEnglish){
-        return `Got it! "${q}" - Absolutely doable! Tell me how you want it? As a website, an app, or something else? I'll build it instantly! 🔥`
-    }
-    // Urdu / Mix default
-    return `Samajh gaya bhai! "${q}" - Samajh gaya bhai! Info chahiye ya bana dun? bana dun ya app? Bolo kya scene hai, foran bana deta hu! 🔥`
-  }
-
-  const send=()=>{
-    if(!input.trim()) return
-    const q=input
-    const l=q.toLowerCase()
-    const b=detect(q)
-    setMsgs(m=>[...m,{from:"user",text:q}])
-    setNotes(n=>[...n,q])
-    setInput("")
-    setTimeout(()=>{
-      const reply=getReply(q,l,b)
-      setMsgs(m=>[...m,{from:"ai",text:reply,build:b}])
-    },350)
-  }
-
-  return (
-
-    <div style={{minHeight:"100vh",background:"#0a0a0a",color:"#e5e5e5",fontFamily:"monospace",display:"flex"}}>
-      <div style={{width:155,background:"#080808",borderRight:"1px solid #1a1a1a",padding:"10px 8px",fontSize:11}}>
-        <div style={{fontWeight:800}}>NO QUIT AI<br/><span style={{fontSize:7,color:"#666"}}>ALWAYS BUILDING</span></div>
-        <div style={{marginTop:14,color:"#666",fontSize:8}}>NAVIGATION</div>
-        <div onClick={()=>setView("dash")} style={{background:view=="dash"?"#fff":"transparent",color:view=="dash"?"#000":"#888",padding:"7px 8px",borderRadius:5,fontWeight:700,marginTop:6,cursor:"pointer"}}>Dashboard</div>
-        <div onClick={()=>setView("chat")} style={{background:view=="chat"?"#fff":"transparent",color:view=="chat"?"#000":"#888",padding:"7px 8px",borderRadius:5,fontWeight:700,marginTop:6,cursor:"pointer"}}>💬 New Chat</div>
-      </div>
-
-      <div style={{flex:1,display:"flex",flexDirection:"column",maxHeight:"100vh"}}>
-        {view=="dash"?(
-          <div style={{flex:1,overflowY:"auto",padding:"12px 10px"}}>
-            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:12}}><span>⚡</span><div><div style={{fontWeight:800,fontSize:14}}>NO QUIT AI</div><div style={{fontSize:8,color:"#666"}}>All Language AI coder - Urdu English Hindi</div></div></div>
-            <div style={{background:"#121212",border:"1px solid #1e1e1e",borderRadius:6,padding:8,fontSize:8,marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",color:"#666"}}>● ALL WORLD FUTURE WARNING - LIVE <span>LIVE</span></div><div style={{marginTop:6,background:"#000",padding:"6px 8px",borderRadius:4,display:"flex",justifyContent:"space-between",fontSize:9}}><span>🌎 1 km NW of The Geysers, CA</span><span>M1.31</span></div></div>
-            <div style={{background:"#111113",border:"1px solid #1e1e1e",borderRadius:8,padding:10,marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:"#22d3ee"}}>● SYSTEM GROW - AUTO IMPROVING <span>LVL 92%</span></div><div style={{height:4,background:"#1a1a1a",borderRadius:10,margin:"8px 0"}}><div style={{width:"92%",height:"100%",background:"#22d3ee"}}></div></div><div style={{fontSize:8,color:"#888",lineHeight:1.8}}><div>🚀 Builder Mode ON: Instant Build</div><div>🧠 No More Questions - Direct Build</div><div>🔧 All Language Support Added</div></div></div>
-            <div style={{background:"#111113",border:"1px solid #1e1e1e",borderRadius:8,padding:10,marginBottom:10}}><div style={{fontSize:8,color:"#a3a3a3"}}>● AUTO EVOLVE</div><div style={{fontSize:8,color:"#86efac",margin:"6px 0"}}>🔍 Analyzed - Adding smarter version...</div><div style={{display:"flex",justifyContent:"space-between",background:"#0a0a0a",padding:5,fontSize:8,marginTop:4}}><span>Calculator Builder</span><span style={{color:"#22c55e"}}>✓ Ready</span></div><div style={{display:"flex",justifyContent:"space-between",background:"#0a0a0a",padding:5,fontSize:8,marginTop:4}}><span>Website Builder</span><span style={{color:"#22c55e"}}>✓ Ready</span></div></div>
-            <div style={{background:"#111113",border:"1px solid #1e1e1e",borderRadius:8,padding:10,marginBottom:12}}><div style={{fontSize:8,color:"#666"}}>● NOTES VAULT - {notes.length} saved</div><div style={{display:"flex",gap:6,marginTop:8}}><input value={note} onChange={e=>setNote(e.target.value)} placeholder="Write your idea..." style={{flex:1,background:"#000",border:"1px solid #222",color:"#fff",padding:8,borderRadius:4,fontSize:10}}/><button onClick={()=>{if(note.trim()){setNotes([...notes,note]); setNote("")}}} style={{background:"#fff",color:"#000",border:"none",padding:"6px 12px",borderRadius:4,fontSize:9,fontWeight:800}}>ADD</button></div></div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><button onClick={()=>setView("chat")} style={{background:"#121212",border:"1px solid #1e1e1e",borderRadius:8,padding:14,color:"#fff",textAlign:"left"}}><div>🌐</div><div style={{fontWeight:700,fontSize:11,marginTop:6}}>Build Website</div></button><button onClick={()=>setView("chat")} style={{background:"#121212",border:"1px solid #1e1e1e",borderRadius:8,padding:14,color:"#fff",textAlign:"left"}}><div>🧮</div><div style={{fontWeight:700,fontSize:11,marginTop:6}}>Build Calculator</div></button><button onClick={()=>setView("chat")} style={{background:"#121212",border:"1px solid #1e1e1e",borderRadius:8,padding:14,color:"#fff",textAlign:"left"}}><div>📝</div><div style={{fontWeight:700,fontSize:11,marginTop:6}}>Todo App</div></button><button onClick={()=>setView("chat")} style={{background:"#121212",border:"1px solid #1e1e1e",borderRadius:8,padding:14,color:"#fff",textAlign:"left"}}><div>🎮</div><div style={{fontWeight:700,fontSize:11,marginTop:6}}>Create Game</div></button></div>
-          </div>
-        ):(
-          <div style={{flex:1,display:"flex",flexDirection:"column",background:"#0f0f0f"}}>
-            <div style={{padding:"10px 12px",borderBottom:"1px solid #222",display:"flex",justifyContent:"space-between"}}><b style={{fontSize:12}}>💬 CHAT - Instant Builder</b><button onClick={()=>setView("dash")} style={{background:"#222",border:"none",color:"#fff",padding:"4px 8px",borderRadius:4,fontSize:10}}>← Back</button></div>
-            <div style={{flex:1,overflowY:"auto",padding:12,display:"flex",flexDirection:"column",gap:10}}>
-              {msgs.map((m,i)=><div key={i} style={{maxWidth:"92%",alignSelf:m.from=="user"?"flex-end":"flex-start"}}><div style={{background:m.from=="user"?"#fff":"#1e1e1e",color:m.from=="user"?"#000":"#fff",padding:"8px 12px",borderRadius:12,fontSize:12}}>{m.text}</div>{m.build&&<Builder type={m.build}/>}</div>)}
-              <div ref={bottomRef}></div>
-            </div>
-            <div style={{padding:10,display:"flex",gap:6,borderTop:"1px solid #222",background:"#0a0a0a"}}>
-              <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key=="Enter"&&send()} placeholder="Build a modern calculator..." style={{flex:1,background:"#1a1a1a",border:"1px solid #333",color:"#fff",padding:"12px",borderRadius:10,fontSize:13}}/>
-              <button onClick={send} style={{background:"#fff",color:"#000",border:"none",padding:"0 18px",borderRadius:10,fontWeight:800}}>Send</button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
-  )
+  );
 }
