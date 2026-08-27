@@ -1,75 +1,118 @@
-import { useState, useRef, useEffect } from "react";
-const getSmartReply = (q) => {
-  if (!q ||!q.trim()) return "Bhai kuch likho toh sahi! 🙂";
-  const raw = q.trim();
-  const l = raw.toLowerCase();
-  const isUrduScript = /[\u0600-\u06FF]/.test(raw);
-  const isRomanUrdu = /(mujy|mujhe|kesy|kese|kaise|kya|kyu|bhai|jana|hy|hai|hu|wala|aslam|salam|shukria|acha|kese ho|kya hal|paisa|kamana|sekhna|batao|banao|bnado|chahiye|chahye)/i.test(l);
-  const isEnglish =!isUrduScript &&!isRomanUrdu;
-  const isBuildIntent = /(bana|banao|banado|bnado|build|create|make|design|code|develop|clone|setup)/i.test(l);
-  const isExplainIntent = /(samjha|samjhao|explain|what is|kya hai|kya hota|how to|kaise)/i.test(l);
-  const techStack = l.match(/(react|nextjs|node|python|tailwind|css|javascript|html|express|mongodb|firebase)/gi) || [];
-  const projectTypes = l.match(/(calculator|todo|shop|store|ecommerce|game|website|app|dashboard|chat|bot|landing page|portfolio|crud)/gi) || [];
-  const cleanedTopic = raw.replace(/(bana|banao|banado|bnado|build|create|make|design|please|bhai|yaar|mujy|mujhe|ik|ek|code|chahiye|do|de|dene|kardo|krdo)/gi, "").trim();
-  if (l.includes("salam") || l.includes("aslam") || l.includes("السلام")) {
-    if (isUrduScript) return "وعلیکم السلام بھائی! ❤️ بولو آج کیا دھماکہ خیز پروجیکٹ بنانا ہے؟";
-    if (isEnglish) return "Walaikum Aslam bro! ❤️ What awesome app are we building today?";
-    return "Walaikum Aslam bhai! ❤️ Allah khair kare! Batao aaj kya zabardast cheez banani hai?";
-  }
-  if (isBuildIntent) {
-    const topicDisplay = projectTypes.length > 0? projectTypes.join(" + ").toUpperCase() : (cleanedTopic? cleanedTopic.toUpperCase() : "CUSTOM PROJECT");
-    const stackText = techStack.length > 0? ` using ${techStack.join(", ").toUpperCase()}` : "";
-    if (isUrduScript) return `ٹھیک ہے بھائی! آپ کا ${topicDisplay} پروجیکٹ تیار کرتے ہیں۔ میں اس کا کوڈ لکھنا شروع کروں؟ 🚀`;
-    if (isEnglish) return `Got it bro! I'm on it. Starting the architecture for your ${topicDisplay}${stackText}. Ready to review the code? 🚀`;
-    return `Zabardast bhai! Aapka ${topicDisplay}${stackText} ka request mil gaya hai. Abhi poora code structure tayar karke deta hu! 🚀`;
-  }
-  if (isExplainIntent) {
-    const topic = cleanedTopic || "is topic";
-    if (isEnglish) return `Sure bro! Let me break down ${topic} step-by-step for you.`;
-    return `Bilkul bhai! ${topic} ko aasan lafzon me samjha deta hu.`;
-  }
-  if (l.match(/china|chaina|cheena|chayna|چین/)) {
-    return isEnglish? "For China: Passport + Visa + Ticket required. Tourist visa takes 4-5 days. Want me to build a travel guide dashboard?" : "China jane ke liye Passport + Visa + Ticket chahiye! Tourist visa 4-5 din me lagta hai. Bolo Travel Guide app bana dun?";
-  }
-  if (l.match(/lora|lodda|loda|lodd|لورا/)) {
-    return "LoRA (Low-Rank Adaptation) AI models ko kam VRAM pe fine-tune karne ke liye use hota hai. Kya aapko iska Python script chahiye?";
-  }
-  if (l.match(/trading|trade|ٹریڈنگ/)) {
-    return "Trading ke liye Binance/TradingView pe practice karo. Kya main aapke liye profit calculator ya signal dashboard banao?";
-  }
-  if (isUrduScript) return `میں آپ کی بات سمجھ گیا ہوں: "${raw}"۔ بتائیں اس کا پروجیکٹ بناؤں یا ڈیٹیل بتاؤں؟`;
-  if (isEnglish) return `I got your context: "${raw}". Should I write the full code for this or explain the concept first?`;
-  return `Bhai aapne kaha: "${raw}". Batao iska complete code likh du ya pehle structure samjhau?`;
-};
+import { useState } from "react";
+
+// --- SMART NO LINKS + ALL LANGUAGE ---
 export default function App() {
-  const [msgs, setMsgs] = useState([{ from: "ai", text: "Aslam o Alaikum bhai! NO QUIT AI Full Smart Mode me active hai! Bolo kya banana hai? High-level custom apps, Dashboards, ya APIs?" }]);
-  const [input, setInput] = useState("");
-  const chatEndRef = useRef(null);
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
-  const send = () => {
-    if (!input.trim()) return;
-    const q = input;
-    setMsgs((m) => [...m, { from: "user", text: q }]);
-    setInput("");
-    setTimeout(() => { setMsgs((m) => [...m, { from: "ai", text: getSmartReply(q) }]); }, 250);
+  const [language, setLanguage] = useState("en");
+  const isUrdu = language === "ur";
+  const [activeProject, setActiveProject] = useState(null);
+  const [msgs, setMsgs] = useState([]);
+
+  // Mock Data (no external API needed)
+  const mockStats = {
+    recentProjects: [
+      { id: 1, name: "My Shop Website", projectType: "website", status: "complete", description: "Ecommerce store", updatedAt: new Date() },
+      { id: 2, name: "Todo App", projectType: "react", status: "in-progress", description: "Task manager", updatedAt: new Date() },
+    ]
   };
+
+  const quickStarts = [
+    { type: "website", label: isUrdu ? "ویب سائٹ بنائیں" : "Build Website", desc: isUrdu ? "ایچ ٹی ایم ایل اور سی ایس ایس" : "HTML & CSS site", emoji: "🌐" },
+    { type: "react", label: isUrdu ? "ری ایکٹ ایپ" : "React App", desc: isUrdu ? "ماڈرن ویب ایپ" : "Modern web app", emoji: "⚛️" },
+    { type: "python", label: isUrdu ? "پائتھون سکرپٹ" : "Python Script", desc: isUrdu ? "آٹومیشن ٹول" : "Automation tool", emoji: "🐍" },
+    { type: "game", label: isUrdu ? "گیم بنائیں" : "Create Game", desc: isUrdu ? "ایچ ٹی ایم ایل 5 گیم" : "HTML5 Canvas game", emoji: "🎮" },
+  ];
+
+  const handleBuild = (type) => {
+    const topic = type.toUpperCase();
+    setActiveProject(topic);
+    setMsgs(prev => [...prev, { from: "ai", text: isUrdu ? `لو بھائی! ${topic} بنا دیا! 👇 نیچے دیکھو!` : `Got it bro! Building ${topic} right now! 👇 Check preview!`, build: type }]);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
   return (
-    <div style={{ minHeight: "100vh", background: "#0d0d0e", color: "#e5e7eb", fontFamily: "monospace", display: "flex" }}>
-      <div style={{ width: 180, background: "#111113", borderRight: "1px solid #222225", padding: 15, display: "flex", flexDirection: "column", gap: 15 }}>
-        <div><b style={{ color: "#fbbf24", fontSize: 16 }}>NO QUIT AI</b><br/><small style={{ color: "#6b7280" }}>SMART BUILDER v2</small></div>
-        <button onClick={() => setMsgs([{ from: "ai", text: "New Chat Started! Bolo kya banana hai?" }])} style={{ background: "#fbbf24", color: "#000", border: "none", padding: "8px 12px", borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>+ New Chat</button>
-      </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh" }}>
-        <div style={{ padding: 15, borderBottom: "1px solid #222225", background: "#111113", fontWeight: "bold" }}>💬 CHAT - Smart Context Engine</div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
-          {msgs.map((m, i) => (<div key={i} style={{ margin: "12px 0", textAlign: m.from === "user"? "right" : "left" }}><div style={{ background: m.from === "user"? "#2563eb" : "#1f1f23", color: "#ffffff", padding: "10px 16px", borderRadius: 12, display: "inline-block", maxWidth: "75%", lineHeight: "1.5" }}>{m.text}</div></div>))}
-          <div ref={chatEndRef} />
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#e5e7eb", fontFamily: "monospace", padding: "20px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+          <div>
+            <h1 style={{ fontSize: "32px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ color: "#fbbf24" }}>●</span> {isUrdu ? "کمانڈ سینٹر" : "Command Center"}
+            </h1>
+            <p style={{ color: "#888", marginTop: "5px" }}>
+              {isUrdu ? "آپ کا ذاتی اے آئی کوڈنگ اسسٹنٹ۔ کیا بنانا چاہتے ہیں؟" : "Your personal AI coding assistant. What are we building today?"}
+            </p>
+          </div>
+          <button onClick={() => setLanguage(isUrdu ? "en" : "ur")} style={{ background: "#1a1a1a", border: "1px solid #333", padding: "8px 12px", borderRadius: "6px", color: "white", cursor: "pointer" }}>
+            {isUrdu ? "English" : "اردو"}
+          </button>
         </div>
-        <div style={{ padding: 15, display: "flex", gap: 10, borderTop: "1px solid #222225", background: "#111113" }}>
-          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Kuch bhi pucho ya banwao (e.g., 'React me Ecommerce store ka code do')..." style={{ flex: 1, padding: 12, borderRadius: 8, background: "#1f1f23", border: "1px solid #333338", color: "white", outline: "none" }} />
-          <button onClick={send} style={{ padding: "12px 24px", background: "#fbbf24", color: "black", border: "none", borderRadius: 8, fontWeight: "bold", cursor: "pointer" }}>Send</button>
+
+        {/* Quick Start */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "15px", marginBottom: "40px" }}>
+          {quickStarts.map((qs) => (
+            <button
+              key={qs.type}
+              onClick={() => handleBuild(qs.type)}
+              style={{ background: "#111", border: "1px solid #222", padding: "20px", borderRadius: "12px", textAlign: "left", cursor: "pointer", transition: "0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "#fbbf24"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "#222"}
+            >
+              <div style={{ fontSize: "30px", marginBottom: "10px" }}>{qs.emoji}</div>
+              <h3 style={{ fontWeight: "bold", fontSize: "16px" }}>{qs.label}</h3>
+              <p style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>{qs.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
+          {/* Recent Projects */}
+          <div>
+            <h2 style={{ fontSize: "20px", marginBottom: "15px" }}>{isUrdu ? "حالیہ پروجیکٹس" : "Recent Projects"}</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {mockStats.recentProjects.map((project) => (
+                <div key={project.id} onClick={() => handleBuild(project.projectType)} style={{ background: "#111", border: "1px solid #222", padding: "15px", borderRadius: "10px", cursor: "pointer" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ background: "#fbbf241a", padding: "5px 8px", borderRadius: "5px" }}>{project.projectType === "website" ? "🌐" : "⚛️"}</span>
+                    <span style={{ background: project.status === "complete" ? "#22c55e22" : "#333", color: project.status === "complete" ? "#22c55e" : "#aaa", fontSize: "10px", padding: "4px 8px", borderRadius: "10px" }}>{project.status}</span>
+                  </div>
+                  <h4 style={{ marginTop: "12px", fontWeight: "bold" }}>{project.name}</h4>
+                  <p style={{ fontSize: "12px", color: "#666" }}>{project.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Builder Preview */}
+            {msgs.map((m, i) => m.build && (
+              <div key={i} style={{ marginTop: "20px", padding: "20px", background: "#151515", border: "1px solid #fbbf24", borderRadius: "12px" }}>
+                <h3>🚀 {m.build.toUpperCase()} Built Successfully!</h3>
+                <p style={{ color: "#888", fontSize: "13px", marginTop: "5px" }}>{m.text}</p>
+                <div style={{ marginTop: "15px", background: "#000", padding: "15px", borderRadius: "8px", textAlign: "center" }}>
+                  {m.build === "website" ? "🌐 Website Live Preview Ready!" : m.build === "game" ? "🎮 Game Canvas Ready! Play Now!" : "⚛️ React App Compiled!"}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent Chats */}
+          <div>
+            <h2 style={{ fontSize: "20px", marginBottom: "15px" }}>{isUrdu ? "حالیہ بات چیت" : "Recent Chats"}</h2>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", overflow: "hidden" }}>
+              {msgs.length === 0 ? (
+                <div style={{ padding: "30px", textAlign: "center", color: "#666", fontSize: "13px" }}>
+                  {isUrdu ? "کوئی چیٹ موجود نہیں" : "No recent conversations"}
+                </div>
+              ) : (
+                msgs.slice(-5).map((m, i) => (
+                  <div key={i} style={{ padding: "12px 15px", borderBottom: "1px solid #222", fontSize: "13px" }}>
+                    <span style={{ color: m.from === "user" ? "#fbbf24" : "#22c55e" }}>●</span> {m.text.substring(0, 50)}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+
