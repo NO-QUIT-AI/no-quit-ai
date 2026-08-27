@@ -1,12 +1,4 @@
-  // SMART CHECK - pehle dekho kya user info chahta hai
-  if(l.includes("china")||l.includes("chaina")) return isEnglish ? "China travel needs visa + flight. Want info or should I build a travel checklist website?" : "China jane ke liye visa + ticket! Info chahiye ya website bana dun?"
-  if(l.includes("lora")) return isEnglish ? "LoRA is AI fine-tuning method. Want me to explain or build a dashboard?" : "Lora AI wala LoRA hai! Samjhau ya dashboard bana dun?"
-  if(l.includes("help")||l.includes("madad")) return isEnglish ? "Yes I'm here! Info or build? Just tell me!" : "Haan bolo info chahiye ya kuch banana hai?"
 
-  if(isEnglish){
-    return `Got it! "${q}" - I can help! Want info about it or should I build something?`
-  }
-  return `Samajh gaya bhai! "${q}" - Info chahiye ya bana dun? Bolo kya scene hai!`
 import { useState, useRef, useEffect } from 'react'
 
 function Builder({type}){
