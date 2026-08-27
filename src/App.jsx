@@ -1,118 +1,79 @@
 import { useState } from "react";
 
-// --- SMART NO LINKS + ALL LANGUAGE ---
 export default function App() {
-  const [language, setLanguage] = useState("en");
-  const isUrdu = language === "ur";
-  const [activeProject, setActiveProject] = useState(null);
-  const [msgs, setMsgs] = useState([]);
+  const [lang, setLang] = useState("en");
+  const isUrdu = lang === "ur";
+  const [build, setBuild] = useState(null);
 
-  // Mock Data (no external API needed)
-  const mockStats = {
-    recentProjects: [
-      { id: 1, name: "My Shop Website", projectType: "website", status: "complete", description: "Ecommerce store", updatedAt: new Date() },
-      { id: 2, name: "Todo App", projectType: "react", status: "in-progress", description: "Task manager", updatedAt: new Date() },
-    ]
-  };
-
-  const quickStarts = [
-    { type: "website", label: isUrdu ? "ویب سائٹ بنائیں" : "Build Website", desc: isUrdu ? "ایچ ٹی ایم ایل اور سی ایس ایس" : "HTML & CSS site", emoji: "🌐" },
-    { type: "react", label: isUrdu ? "ری ایکٹ ایپ" : "React App", desc: isUrdu ? "ماڈرن ویب ایپ" : "Modern web app", emoji: "⚛️" },
-    { type: "python", label: isUrdu ? "پائتھون سکرپٹ" : "Python Script", desc: isUrdu ? "آٹومیشن ٹول" : "Automation tool", emoji: "🐍" },
-    { type: "game", label: isUrdu ? "گیم بنائیں" : "Create Game", desc: isUrdu ? "ایچ ٹی ایم ایل 5 گیم" : "HTML5 Canvas game", emoji: "🎮" },
+  const quick = [
+    { type: "website", t: isUrdu ? "ویب سائٹ" : "Website", d: "HTML CSS", e: "🌐" },
+    { type: "react", t: isUrdu ? "ری ایکٹ" : "React App", d: "Modern App", e: "⚛️" },
+    { type: "python", t: isUrdu ? "پائتھون" : "Python", d: "Script", e: "🐍" },
+    { type: "game", t: isUrdu ? "گیم" : "Game", d: "HTML5 Game", e: "🎮" },
   ];
 
-  const handleBuild = (type) => {
-    const topic = type.toUpperCase();
-    setActiveProject(topic);
-    setMsgs(prev => [...prev, { from: "ai", text: isUrdu ? `لو بھائی! ${topic} بنا دیا! 👇 نیچے دیکھو!` : `Got it bro! Building ${topic} right now! 👇 Check preview!`, build: type }]);
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  };
+  const projects = [
+    { id: 1, name: "My Shop", type: "website", status: "complete" },
+    { id: 2, name: "Todo App", type: "react", status: "building" },
+  ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#e5e7eb", fontFamily: "monospace", padding: "20px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "monospace", padding: 20 }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 30 }}>
           <div>
-            <h1 style={{ fontSize: "32px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "10px" }}>
+            <h1 style={{ fontSize: 28, fontWeight: "bold" }}>
               <span style={{ color: "#fbbf24" }}>●</span> {isUrdu ? "کمانڈ سینٹر" : "Command Center"}
             </h1>
-            <p style={{ color: "#888", marginTop: "5px" }}>
-              {isUrdu ? "آپ کا ذاتی اے آئی کوڈنگ اسسٹنٹ۔ کیا بنانا چاہتے ہیں؟" : "Your personal AI coding assistant. What are we building today?"}
-            </p>
+            <p style={{ color: "#888" }}>{isUrdu ? "کیا بنانا ہے؟" : "What are we building today?"}</p>
           </div>
-          <button onClick={() => setLanguage(isUrdu ? "en" : "ur")} style={{ background: "#1a1a1a", border: "1px solid #333", padding: "8px 12px", borderRadius: "6px", color: "white", cursor: "pointer" }}>
-            {isUrdu ? "English" : "اردو"}
+          <button onClick={() => setLang(isUrdu ? "en" : "ur")} style={{ background: "#1a1a1a", color: "#fff", border: "1px solid #333", padding: "8px 12px", borderRadius: 6 }}>
+            {isUrdu ? "EN" : "UR"}
           </button>
         </div>
 
-        {/* Quick Start */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "15px", marginBottom: "40px" }}>
-          {quickStarts.map((qs) => (
-            <button
-              key={qs.type}
-              onClick={() => handleBuild(qs.type)}
-              style={{ background: "#111", border: "1px solid #222", padding: "20px", borderRadius: "12px", textAlign: "left", cursor: "pointer", transition: "0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "#fbbf24"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "#222"}
-            >
-              <div style={{ fontSize: "30px", marginBottom: "10px" }}>{qs.emoji}</div>
-              <h3 style={{ fontWeight: "bold", fontSize: "16px" }}>{qs.label}</h3>
-              <p style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>{qs.desc}</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 15, marginBottom: 30 }}>
+          {quick.map((q) => (
+            <button key={q.type} onClick={() => setBuild(q.type)} style={{ background: "#111", border: "1px solid #222", padding: 20, borderRadius: 12, textAlign: "left", cursor: "pointer" }}>
+              <div style={{ fontSize: 28 }}>{q.e}</div>
+              <div style={{ fontWeight: "bold", marginTop: 8 }}>{q.t}</div>
+              <div style={{ fontSize: 12, color: "#888" }}>{q.d}</div>
             </button>
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
-          {/* Recent Projects */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
           <div>
-            <h2 style={{ fontSize: "20px", marginBottom: "15px" }}>{isUrdu ? "حالیہ پروجیکٹس" : "Recent Projects"}</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              {mockStats.recentProjects.map((project) => (
-                <div key={project.id} onClick={() => handleBuild(project.projectType)} style={{ background: "#111", border: "1px solid #222", padding: "15px", borderRadius: "10px", cursor: "pointer" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ background: "#fbbf241a", padding: "5px 8px", borderRadius: "5px" }}>{project.projectType === "website" ? "🌐" : "⚛️"}</span>
-                    <span style={{ background: project.status === "complete" ? "#22c55e22" : "#333", color: project.status === "complete" ? "#22c55e" : "#aaa", fontSize: "10px", padding: "4px 8px", borderRadius: "10px" }}>{project.status}</span>
-                  </div>
-                  <h4 style={{ marginTop: "12px", fontWeight: "bold" }}>{project.name}</h4>
-                  <p style={{ fontSize: "12px", color: "#666" }}>{project.description}</p>
+            <h3 style={{ marginBottom: 12 }}>{isUrdu ? "حالیہ پروجیکٹس" : "Recent Projects"}</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {projects.map((p) => (
+                <div key={p.id} onClick={() => setBuild(p.type)} style={{ background: "#111", border: "1px solid #222", padding: 15, borderRadius: 10, cursor: "pointer" }}>
+                  <div>{p.type === "website" ? "🌐" : "⚛️"} {p.name}</div>
+                  <div style={{ fontSize: 11, color: p.status === "complete" ? "#22c55e" : "#fbbf24", marginTop: 5 }}>{p.status}</div>
                 </div>
               ))}
             </div>
 
-            {/* Builder Preview */}
-            {msgs.map((m, i) => m.build && (
-              <div key={i} style={{ marginTop: "20px", padding: "20px", background: "#151515", border: "1px solid #fbbf24", borderRadius: "12px" }}>
-                <h3>🚀 {m.build.toUpperCase()} Built Successfully!</h3>
-                <p style={{ color: "#888", fontSize: "13px", marginTop: "5px" }}>{m.text}</p>
-                <div style={{ marginTop: "15px", background: "#000", padding: "15px", borderRadius: "8px", textAlign: "center" }}>
-                  {m.build === "website" ? "🌐 Website Live Preview Ready!" : m.build === "game" ? "🎮 Game Canvas Ready! Play Now!" : "⚛️ React App Compiled!"}
+            {build && (
+              <div style={{ marginTop: 20, padding: 20, background: "#151515", border: "1px solid #fbbf24", borderRadius: 12 }}>
+                <h3>🚀 {build.toUpperCase()} BUILT!</h3>
+                <p style={{ color: "#888", fontSize: 13, marginTop: 5 }}>Preview Ready! Code generated successfully!</p>
+                <div style={{ marginTop: 12, background: "#000", padding: 15, borderRadius: 8, textAlign: "center" }}>
+                  Live Preview: {build}
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
-          {/* Recent Chats */}
           <div>
-            <h2 style={{ fontSize: "20px", marginBottom: "15px" }}>{isUrdu ? "حالیہ بات چیت" : "Recent Chats"}</h2>
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", overflow: "hidden" }}>
-              {msgs.length === 0 ? (
-                <div style={{ padding: "30px", textAlign: "center", color: "#666", fontSize: "13px" }}>
-                  {isUrdu ? "کوئی چیٹ موجود نہیں" : "No recent conversations"}
-                </div>
-              ) : (
-                msgs.slice(-5).map((m, i) => (
-                  <div key={i} style={{ padding: "12px 15px", borderBottom: "1px solid #222", fontSize: "13px" }}>
-                    <span style={{ color: m.from === "user" ? "#fbbf24" : "#22c55e" }}>●</span> {m.text.substring(0, 50)}
-                  </div>
-                ))
-              )}
+            <h3 style={{ marginBottom: 12 }}>{isUrdu ? "چیٹس" : "Chats"}</h3>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: 10, padding: 20, color: "#666", textAlign: "center" }}>
+              {build ? "Building " + build + "..." : (isUrdu ? "کوئی چیٹ نہیں" : "No chats yet")}
             </div>
           </div>
         </div>
       </div>
     </div>
   );
+}
 
